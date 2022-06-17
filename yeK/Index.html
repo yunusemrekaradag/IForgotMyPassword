@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://www.google.com/recaptcha/api.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="~/Scripts/jquery-3.6.0.min.js"></script>
+    <title>Portal - NPİstanbul Beyin Hastanesi</title>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="https://intranet.npistanbul.com//img/logo.png" alt="Logo">
+        </div>
+        <div class="title">Parola Sıfırlama</div>
+        <div class="input-box">
+            <input type="text" name="TCK" id="tc" maxlength="11" pattern="[0-9]{11}"   required>
+            <label for="tc">TC Kimlik Numarası</label>
+        </div>
+        <br />
+        <div class="g-recaptcha" data-callback="enablebtn" data-sitekey="6LdrKEMgAAAAAFZqEWbwcsavNj-_OIUmKEmYK9M5"></div>
+        <br />
+        <button id="login" type="submit" class="btn">SMS Gönder</button>
+        <br />
+        <br />
+        <div class="copyright">
+            <p>&copy; NPİSTANBUL Beyin Hastanesi - 2022</p>
+        </div>
+    </div>
+
+    <div class="popup">
+        <div class="popup-content">
+            <img src="image/close.png" alt="Close" class="close">
+            <div class="logo2">
+                <img src="https://intranet.npistanbul.com//img/logo.png" alt="Logo">
+            </div> <br />
+            <p id="sayac" class="syc"></p>
+            <div class="input-box2">
+                <input type="text" name="SMS" id="smskod" maxlength="6" pattern="[0-9]{6}" required>
+                <label for="smskod">SMS Kodunu Giriniz</label>
+            </div>
+            <div class="title2">
+                <button type="submit" class="btn2">SIFIRLA</button>
+            </div>
+        </div>
+    </div>
+
+    <!--Popup Penceresi-->
+    <script>
+        let myinterval = null;
+
+        function getCurrentTimeInSeconds()
+        {
+            return Math.floor(Date.now() / 1000)
+        }
+
+        function setSendTime(tc) {
+            if (window.localStorage.getItem(tc) == null)
+            {
+                gonderimZaman = getCurrentTimeInSeconds()
+                window.localStorage.setItem(tc, gonderimZaman)
+                saniye = 180
+            }
+            else
+            {
+                gonderimZaman = window.localStorage.getItem(tc)
+                let gecenZaman = getCurrentTimeInSeconds() - gonderimZaman
+
+                if (gecenZaman > 180)
+                {
+                    gonderimZaman = getCurrentTimeInSeconds()
+                    window.localStorage.setItem(tc, gonderimZaman)
+                    gecenZaman = getCurrentTimeInSeconds() - gonderimZaman
+                }
+                saniye = 180 - gecenZaman
+            }
+        }
+
+        document.getElementById("login").addEventListener("click", function ()
+        {
+            document.querySelector(".popup").style.display = "flex";
+
+            let tc = document.getElementById("tc").value
+
+            setSendTime(tc)
+
+            document.getElementById("sayac").innerHTML = guzelSaniye(saniye);
+            myinterval = setInterval(sayackontrol, 1000);
+        })
+
+        document.querySelector(".close").addEventListener("click", function ()
+        {
+            document.querySelector(".popup").style.display = "none";
+            clearInterval(myinterval);
+            document.getElementById("sayac").innerHTML = guzelSaniye(saniye);
+        })
+
+    </script>
+
+    <!--Buton Disabled-Enabled-->
+    <script>
+        const control = psw =>
+        {
+            let invalids = psw.querySelectorAll(':invalid').length,
+                button = psw.querySelector('button[type="submit"]');
+
+            //console.log(invalids);
+            //var rcf = document.getElementsByName('recaptcha_challenge_field')[0].value;
+            //console.log(rcf);
+            //console.log(grecaptcha.getResponse());
+
+            if (invalids === 0) {
+
+                button.removeAttribute('disabled');
+            }
+            else {
+                button.setAttribute('disabled', 'disabled');
+            }
+        }
+        let btn = document.querySelectorAll('.container');
+
+        btn.forEach(psw =>
+        {
+            control(psw);
+            psw.addEventListener('keyup', () => control(psw))
+            psw.addEventListener('change', () => control(psw))
+        })
+
+        let btn2 = document.querySelectorAll('.popup');
+
+        btn2.forEach(psw =>
+        {
+            control(psw);
+            psw.addEventListener('keyup', () => control(psw))
+            psw.addEventListener('change', () => control(psw))
+        })      
+    </script>
+
+    <!--Re-Captcha Kontrolü-->
+    <script>
+
+        var uresponse = grecaptcha.getResponse();
+        if (uresponse.length == 0)
+          {
+         return
+          }
+    </script>
+
+    <!--Sayaç-->
+
+    <script>
+        let gonderimZaman = 0
+        let saniye = 0
+        document.getElementById("sayac").innerHTML = guzelSaniye(saniye);
+
+        function sayackontrol() {
+            saniye -= 1;
+            document.getElementById("sayac").innerHTML = guzelSaniye(saniye);
+            console.log(saniye);
+            if (saniye == 0)
+            {
+                clearInterval(myinterval);
+            }
+        }
+
+        function guzelSaniye(saniye)
+        {
+            return new Date(saniye * 1000).toISOString().substr(14, 5);
+        }
+    </script>
+</body>
+</html>
